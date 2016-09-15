@@ -1,7 +1,7 @@
 ### installation ###
 
 #CRAN packages
-install.packages(c("shiny", "shinyjs", "shinysky", "dplyr", "ggplot2", 
+install.packages(c("shiny", "shinydashboard", "shinyjs", "dplyr", "ggplot2", 
                    "gplots", "scales", "gridExtra", "lazyeval",
                    "randomForest", "foreach", "tidyr", "stringr", "RColorBrewer",
                    "iterators", "htmlwidgets", "matrixStats",
@@ -14,3 +14,6 @@ biocLite("GEOquery", ask=F)
 biocLite("genefu", ask=F)
 biocLite("org.Hs.eg.db", ask=F)
 biocLite("GSVA", ask=F)
+
+devtools::install_github("AnalytixWare/ShinySky")
+

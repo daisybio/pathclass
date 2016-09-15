@@ -1,6 +1,5 @@
 library(shiny)
 library(shinyjs)
-library(RTCGAToolbox)
 library(GSVA)
 library(randomForest)
 library(foreach)
