@@ -5,13 +5,21 @@ getCUSTOM_data <- reactive({
     if (is.null(inFile))
         return(NULL)
 
-    tryCatch(read.table(inFile$datapath,
+    custom.data <- tryCatch(read.table(inFile$datapath,
                header = TRUE,
                sep = input$sep),
              error = function(e) {
                  shinysky::showshinyalert(session, "custom_error", paste("Upload failed: ", e$message, sep="") ,"danger")
                  return(NULL)
              })
+    
+    if(is.null(custom.data)) return(NULL)
+    else{
+      if(input$genes.are.row.names){
+        custom.data <- tibble::rownames_to_column(custom.data, var = "Gene")
+      }
+    }
+    return(custom.data)
 })
 
 output$custom_file_uploaded <- reactive({
@@ -108,11 +116,11 @@ getCUSTOM_data_mapped_genes_table <- reactive({
 startCUSTOM <- observeEvent(input$custom_button, {
     getCUSTOM_subtypes()
 
-    show(selector = "#custom_nav li a[data-value='Predictions Plot']")
-    show(selector = "#custom_nav li a[data-value='Predictions Table']")
-    show(selector = "#custom_nav li a[data-value='Performance (subtypes)']")
-    show(selector = "#custom_nav li a[data-value='Performance (predictors)']")
-    show(selector = "#custom_nav li a[data-value='Confusion matrices']")
+    shinyjs::show(selector = "#custom_nav li a[data-value='Predictions Plot']")
+    shinyjs::show(selector = "#custom_nav li a[data-value='Predictions Table']")
+    shinyjs::show(selector = "#custom_nav li a[data-value='Performance (subtypes)']")
+    shinyjs::show(selector = "#custom_nav li a[data-value='Performance (predictors)']")
+    shinyjs::show(selector = "#custom_nav li a[data-value='Confusion matrices']")
 })
 
 getCUSTOM_subtypes <- reactive({
@@ -153,7 +161,7 @@ getCUSTOM_subtypes <- reactive({
                         progress = progress,
                         selected.pathways = selected.pathways,
                         all.rf = all.rf,
-                        pathway.sources = pathway.sources)
+                        pathway.sources = input$selected_predictors)
 
     result <- spread(result, "pathways", "subtype")
 

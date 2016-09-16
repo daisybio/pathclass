@@ -1,3 +1,7 @@
+.dlbutton{
+  margin-bottom: 10px;  
+}
+
 .shiny-progress-container{
 	z-index: 5000;
 }

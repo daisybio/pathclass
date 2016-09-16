@@ -1,15 +1,4 @@
-plot_heatmap <- function(subtypes, orderBy){
-    subtypes <- subtypes %>% dplyr::select(-scmgene, -scmod1, -scmod2, -intClust)
-    subtypes <- transform(subtypes, Sample=reorder(Sample, as.integer(as.factor(subtypes[[orderBy]]))))
-    plot.data <- tidyr::gather(subtypes, "predictor", "subtype", -Sample)
-    ggplot(plot.data, aes(y = Sample, x = as.factor(predictor), fill = as.factor(subtype))) +
-        geom_tile() +
-        theme(axis.text.y=element_blank(), axis.ticks.y = element_blank()) +
-        xlab("Predictor") +
-        scale_fill_discrete(name = "Breast cancer subtype") +
-        scale_fill_brewer(palette="Accent")
-}
-
+# when we have several probes per gene we use the most variable one
 fn_filter_most_variable <- function(ex, entrez_ids){
     row.variance <- rowVars(ex)
     names(row.variance) <- rownames(ex)
@@ -22,8 +11,10 @@ fn_filter_most_variable <- function(ex, entrez_ids){
     ex[most.variable,]
 }
 
+# we calculate the prediction error using a reference
+# includes F measure, precision and recall
 calculate_class_errors <- function(subtypes, reference){
-    subtypes <- subtypes %>% dplyr::select(-scmgene, -scmod1, -scmod2, -intClust)
+    subtypes <- subtypes %>% dplyr::select(-scmgene, -scmod1, -scmod2)
 
     subtype_reference <- subtypes[[reference]]
     subtype_reference[!(subtype_reference %in% brca_subtypes)] <- NA
@@ -59,34 +50,9 @@ calculate_class_errors <- function(subtypes, reference){
     }
 }
 
-plot_class_errors_subtypes <- function(subtypes, reference){
-    class_errors <- calculate_class_errors(subtypes, reference)
-    class_errors <- tidyr::gather(class_errors, key = "measure", value = "value", -subtype, -predictor, -reference)
-
-    ggplot(class_errors, aes(x = predictor, y = value, fill = predictor)) +
-        facet_grid(measure~subtype) +
-        geom_bar(stat = "identity", position = "dodge") +
-        theme_bw() +
-        theme(axis.title.x=element_blank(),
-              axis.text.x=element_blank(),
-              axis.ticks.x=element_blank())
-}
-
-plot_class_errors_predictors <- function(subtypes, reference){
-    class_errors <- calculate_class_errors(subtypes, reference)
-    class_errors <- tidyr::gather(class_errors, key = "measure", value = "value", -subtype, -predictor, -reference)
-
-    ggplot(class_errors, aes(x = subtype, y = value, fill = subtype)) +
-        facet_grid(measure~predictor) +
-        geom_bar(stat = "identity", position = "dodge") +
-        theme_bw() +
-        theme(axis.title.x=element_blank(),
-              axis.text.x=element_blank(),
-              axis.ticks.x=element_blank())
-}
-
+# Confusion matrix
 calculate_confusion_matrices <- function(subtypes, reference){
-    subtypes <- subtypes %>% dplyr::select(-scmgene, -scmod1, -scmod2, -intClust)
+    subtypes <- subtypes %>% dplyr::select(-scmgene, -scmod1, -scmod2)
 
     subtype_reference <- subtypes[[reference]]
     subtype_reference[!(subtype_reference %in% brca_subtypes)] <- NA
@@ -110,16 +76,7 @@ calculate_confusion_matrices <- function(subtypes, reference){
     }
 }
 
-plot_confusion_matrices <- function(subtypes, reference){
-    plot.data <- calculate_confusion_matrices(subtypes, reference)
-
-    ggplot(plot.data, aes(x = Predicted, y = Reference, fill = Freq)) +
-        geom_tile() +
-        geom_text(aes(label = Freq), color = "orange") +
-        facet_wrap(~predictor) +
-        theme_bw()
-}
-
+# Uses the bioconductor geneFu package to get predictions of classical gene expression signatures
 geneFu <- function(expression_data){
     sbt.models = c("scmgene", "scmod1", "scmod2",
                    "pam50", "ssp2006", "ssp2003")
@@ -141,6 +98,8 @@ geneFu <- function(expression_data){
             }
 }
 
+# Performs for each pathway predictor selected single sample gene set enrichment analysis
+# The enrichment scores are used for predicting subtypes in random forest, i.e. the features.
 fn_ssgsea <- function(exprs, progress, pathway.sources, selected.pathways, all.rf, sel.samples = NULL){
 
     if(is.null(sel.samples)) sel.samples <- rownames(exprs)
@@ -172,7 +131,7 @@ fn_ssgsea <- function(exprs, progress, pathway.sources, selected.pathways, all.r
 
         # We create the pathway scores for the sample
         # (this can also be done for multiple samples in parallel)
-        ssgsea_result <- run.gsva(exprs.plus, pathways, cores = 2, method = "ssgsea")
+        ssgsea_result <- run.gsva(exprs.plus, pathways, cores = max(parallel::detectCores() - 1, 1), method = "ssgsea")
 
         # We get the random forest model we built for MSIG features
         # and predict the sample label

@@ -9,7 +9,7 @@ dashboardPage(
     dashboardSidebar(
         sidebarMenu(
             menuItem("About", tabName = "About", icon = icon("info")),
-            menuItem("Selected Pathways", tabName = "Pathways", icon = icon("bookmark")),
+            menuItem("Selected Pathway Predictors", tabName = "Pathways", icon = icon("bookmark")),
             menuItem("TCGA BRCA Data", tabName = "TCGA_array", icon = icon("th")),
             menuItem("Gene Expression Omnibus", tabName = "GEO", icon = icon("bus")),
             menuItem("Upload Data", tabName = "CUSTOM", icon = icon("cloud-upload"))
@@ -33,9 +33,16 @@ dashboardPage(
                 HTML(aboutText)
             ),
             tabItem(tabName = "Pathways",
-                    h2("Selected Pathways"),
+                    h2("Selected Pathway Predictors"),
                     tabsetPanel(
-                        tabPanel("Overview", plotOutput("pathways_overview")),
+                        tabPanel("Selected Predictors",
+                                 div("The number of predictors selected has a large effect on the runtime of the subtype prediction."),
+                                 checkboxGroupInput("selected_predictors", 
+                                             "Select pathway predictors to be used",
+                                             pathway.sources,
+                                             pathway.sources)
+                        ),
+                        tabPanel("# Genes / Pathway", plotOutput("pathways_overview")),
                         tabPanel("Pathway Members",
                                  fluidRow(box(
                         selectInput("selp_dataset", "Select a predictor",
@@ -58,7 +65,7 @@ dashboardPage(
                                         selected = "pam50")
                         )),
                         tabPanel("Predictions Table",
-                                 box(width = 2, downloadButton("download_tcga_subtypes", "Download")),
+                                 downloadButton("download_tcga_subtypes", "Download", class = "dlbutton"),
                                  dataTableOutput("gssea_result_tcga")),
                         tabPanel("Predictions Plot", value = "custom_tab2",
                                  plotOutput("gssea_result_tcga_heatmap")),
@@ -113,7 +120,7 @@ dashboardPage(
                              )
                         ),
                         tabPanel("Predictions Table",
-                                 box(width = 2, downloadButton("download_geo_subtypes", "Download")),
+                                 downloadButton("download_geo_subtypes", "Download", class = "dlbutton"),
                                  dataTableOutput("gssea_result_geo")),
                         tabPanel("Predictions Plot",
                             plotOutput("gssea_result_geo_heatmap")
@@ -136,18 +143,22 @@ dashboardPage(
                         id = "custom_nav",
                         tabPanel("Setup",
                                  fluidRow(
-                                     column(width = 2,
+                                     column(width = 3,
                                          box(
                                              width = NULL,
                                              title = "Upload a dataset",
+                                             HTML("Expected input: genes in rows, samples in columns."),
                                              fileInput("custom_file", "File for subtyping"),
                                              selectInput("sep", "Column separator",
                                                          choices = c("tab" = "\t", "semicolon ;" = ";", "comma ," = ","),
                                                          selected = "\t"),
+                                             checkboxInput("genes.are.row.names", 
+                                                           "Gene identifiers are row names (alternatively it is the first column)",
+                                                           TRUE),
                                              shinysky::shinyalert("custom_error")
                                          )
                                      ),
-                                     column(width = 2,
+                                     column(width = 3,
                                      conditionalPanel("output.custom_file_uploaded",
                                      box(
                                         title = "ID mapping",
@@ -156,7 +167,7 @@ dashboardPage(
                                                     choices = AnnotationDbi::columns(org.Hs.eg.db),
                                                     selected = "SYMBOL")
                                      ))),
-                                     column(width = 2,
+                                     column(width = 3,
                                      conditionalPanel("output.custom_file_uploaded",
                                      box(title = "Select reference / gold standard",
                                          width = NULL,
@@ -175,7 +186,7 @@ dashboardPage(
                                                           selectInput("custom_subtype_Her2", "Her2", choices = NULL)
                                                       )))
                                      ),
-                                     column(width = 2,
+                                     column(width = 3,
                                      conditionalPanel("output.custom_file_uploaded",
                                      box(background = "red",
                                          width = NULL,
@@ -186,7 +197,7 @@ dashboardPage(
                         tabPanel("Data Table", dataTableOutput("raw_data_custom")),
                         tabPanel("Gene ID mapping", dataTableOutput("raw_data_id_map")),
                         tabPanel("Predictions Table",
-                                 box(width = 2, downloadButton("download_custom_subtypes", "Download")),
+                                 downloadButton("download_custom_subtypes", "Download", class = "dlbutton"),
                                  dataTableOutput("gssea_result_custom")),
                         tabPanel("Predictions Plot",
                                  plotOutput("gssea_result_custom_heatmap")
