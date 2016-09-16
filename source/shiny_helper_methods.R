@@ -1,5 +1,5 @@
 plot_heatmap <- function(subtypes, orderBy){
-    subtypes <- subtypes %>% dplyr::select(-scmgene, -scmod1, -scmod2, -claudinLow)
+    subtypes <- subtypes %>% dplyr::select(-scmgene, -scmod1, -scmod2, -intClust)
     subtypes <- transform(subtypes, Sample=reorder(Sample, as.integer(as.factor(subtypes[[orderBy]]))))
     plot.data <- tidyr::gather(subtypes, "predictor", "subtype", -Sample)
     ggplot(plot.data, aes(y = Sample, x = as.factor(predictor), fill = as.factor(subtype))) +
@@ -23,7 +23,7 @@ fn_filter_most_variable <- function(ex, entrez_ids){
 }
 
 calculate_class_errors <- function(subtypes, reference){
-    subtypes <- subtypes %>% dplyr::select(-scmgene, -scmod1, -scmod2, -claudinLow)
+    subtypes <- subtypes %>% dplyr::select(-scmgene, -scmod1, -scmod2, -intClust)
 
     subtype_reference <- subtypes[[reference]]
     subtype_reference[!(subtype_reference %in% brca_subtypes)] <- NA
@@ -86,7 +86,7 @@ plot_class_errors_predictors <- function(subtypes, reference){
 }
 
 calculate_confusion_matrices <- function(subtypes, reference){
-    subtypes <- subtypes %>% dplyr::select(-scmgene, -scmod1, -scmod2, -claudinLow)
+    subtypes <- subtypes %>% dplyr::select(-scmgene, -scmod1, -scmod2, -intClust)
 
     subtype_reference <- subtypes[[reference]]
     subtype_reference[!(subtype_reference %in% brca_subtypes)] <- NA
@@ -122,8 +122,7 @@ plot_confusion_matrices <- function(subtypes, reference){
 
 geneFu <- function(expression_data){
     sbt.models = c("scmgene", "scmod1", "scmod2",
-                   "pam50", "ssp2006", "ssp2003", "claudinLow")
-
+                   "pam50", "ssp2006", "ssp2003")
     annot <- data.frame(EntrezGene.ID = as.integer(colnames(expression_data)))
     rownames(annot) <- colnames(expression_data)
     annot$probe <- colnames(expression_data)

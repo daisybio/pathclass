@@ -22,6 +22,6 @@ getTCGA_subtypes <- reactive({
 
     final_result <- cbind(result, gfu_result[rownames(result),])
     final_result <- as.data.frame(final_result) %>%
-        dplyr::add_rownames("Sample")
+        tibble::rownames_to_column("Sample")
     return(final_result)
 })
