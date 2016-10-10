@@ -8,7 +8,8 @@ dashboardPage(
     ),
     dashboardSidebar(
         sidebarMenu(
-            menuItem("About", tabName = "About", icon = icon("info")),
+            menuItem("About", tabName = "About", icon = icon("play")),
+            menuItem("User Guide", tabName = "Guide", icon = icon("info")),
             menuItem("Selected Pathway Predictors", tabName = "Pathways", icon = icon("bookmark")),
             menuItem("TCGA BRCA Data", tabName = "TCGA_array", icon = icon("th")),
             menuItem("Gene Expression Omnibus", tabName = "GEO", icon = icon("bus")),
@@ -32,15 +33,19 @@ dashboardPage(
             tabItem(tabName = "About",
                 HTML(aboutText)
             ),
+            tabItem(tabName = "Guide",
+                    HTML(guideText)
+            ),
             tabItem(tabName = "Pathways",
                     h2("Selected Pathway Predictors"),
                     tabsetPanel(
                         tabPanel("Selected Predictors",
                                  div("The number of predictors selected has a large effect on the runtime of the subtype prediction."),
-                                 checkboxGroupInput("selected_predictors", 
+                                 checkboxGroupInput("selected_predictors",
                                              "Select pathway predictors to be used",
                                              pathway.sources,
-                                             pathway.sources)
+                                             c("KPM_I2D", "MSIG")
+                                 )
                         ),
                         tabPanel("# Genes / Pathway", plotOutput("pathways_overview")),
                         tabPanel("Pathway Members",
@@ -144,6 +149,10 @@ dashboardPage(
                         tabPanel("Setup",
                                  fluidRow(
                                      column(width = 3,
+                                         box(width = NULL,
+                                             title = "Demo data",
+                                             downloadButton("demo_data", "Gene expression data"),br(),br(),
+                                             downloadButton("demo_labels", "Subtype labels")),
                                          box(
                                              width = NULL,
                                              title = "Upload a dataset",
@@ -152,7 +161,7 @@ dashboardPage(
                                              selectInput("sep", "Column separator",
                                                          choices = c("tab" = "\t", "semicolon ;" = ";", "comma ," = ","),
                                                          selected = "\t"),
-                                             checkboxInput("genes.are.row.names", 
+                                             checkboxInput("genes.are.row.names",
                                                            "Gene identifiers are row names (alternatively it is the first column)",
                                                            TRUE),
                                              shinysky::shinyalert("custom_error")
@@ -163,6 +172,7 @@ dashboardPage(
                                      box(
                                         title = "ID mapping",
                                         width = NULL,
+                                        shinysky::shinyalert("custom_label_mapping_error"),
                                         selectInput("custom_gene_id_type", "Gene ID type",
                                                     choices = AnnotationDbi::columns(org.Hs.eg.db),
                                                     selected = "SYMBOL")
@@ -176,6 +186,7 @@ dashboardPage(
                                                      "pam50")
                                      ), box(title = "Upload custom class labels",
                                             width = NULL,
+                                            shinysky::shinyalert("custom_labels_error"),
                                             fileInput("custom_class_labels", "File with expected class labels (optional)")),
                                      conditionalPanel("output.custom_labels_uploaded",
                                                       box(width = NULL,

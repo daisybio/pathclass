@@ -19,13 +19,13 @@ getGEO_data <- eventReactive(input$geo_dl_button, {
       getGEO(input$geo_id,
              GSEMatrix = TRUE,
              AnnotGPL=TRUE)[[1]]
-         
+
     }, error = function(e) {
       shinysky::showshinyalert(session, "geo_error", paste("Download failed: ", e$message, sep="") ,"danger")
       return(NULL)})
-    
+
     if(is.null(gset)) return(NULL)
-    
+
     progress$set(message = "Final processing of GEO data", value = 0.8)
 
     # make proper column names to match toptable
@@ -109,7 +109,7 @@ getGEO_subtypes <- eventReactive(input$geo_button, {
     gset <- getGEO_data()
 
     progress$set(message = "Processing GEO data", value = 0.1)
-    
+
     # transform array signal
     ex <- exprs(gset)
     qx <- as.numeric(quantile(ex, c(0., 0.25, 0.5, 0.75, 0.99, 1.0), na.rm=T))
@@ -118,10 +118,10 @@ getGEO_subtypes <- eventReactive(input$geo_button, {
       (qx[2] > 0 && qx[2] < 1 && qx[4] > 1 && qx[4] < 2)
     if (LogC) { ex[which(ex <= 0)] <- NaN
     ex <- log2(ex) }
-    
+
     #scaling
     ex <- t(scale(t(ex), center = TRUE, scale = FALSE))
-        
+
     # get gene ids
     entrez_ids <- featureData(gset)@data$Gene.ID
     entrez_ids <- cbind(entrez_ids = as.character(entrez_ids), probe = rownames(ex))
@@ -167,6 +167,11 @@ getGEO_subtypes <- eventReactive(input$geo_button, {
     final_result <- as.data.frame(final_result)
 
     progress$set(message = "Returning results", value = 1.0)
+
+    #select 1st result tab
+    updateTabsetPanel(session, "geo_nav",
+        selected = "Predictions Table"
+    )
 
     return(final_result)
 })

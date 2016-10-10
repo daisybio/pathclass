@@ -1,5 +1,13 @@
 getCUSTOM_data <- reactive({
 
+    # Create a Progress object
+    progress <- shiny::Progress$new()
+
+    # Make sure it closes when we exit this reactive, even if there's an error
+    on.exit(progress$close())
+
+    progress$set(message = "Processing uploaded data", value = 0.1)
+
     inFile <- input$custom_file
 
     if (is.null(inFile))
@@ -12,13 +20,16 @@ getCUSTOM_data <- reactive({
                  shinysky::showshinyalert(session, "custom_error", paste("Upload failed: ", e$message, sep="") ,"danger")
                  return(NULL)
              })
-    
+
     if(is.null(custom.data)) return(NULL)
     else{
       if(input$genes.are.row.names){
         custom.data <- tibble::rownames_to_column(custom.data, var = "Gene")
       }
     }
+
+    shinysky::hideshinyalert(session,
+                             "custom_error")
     return(custom.data)
 })
 
@@ -32,10 +43,23 @@ getCUSTOM_classLabels <- reactive({
 
     inFile <- input$custom_class_labels
     if(is.null(inFile)) return(NULL)
-    labels <- scan(inFile$datapath, what="character", sep="\n")
+    labels <- tryCatch(scan(inFile$datapath, what="character", sep="\n"),
+                       error = function(e){
+                           shinysky::showshinyalert(session,
+                                                    "custom_labels_error",
+                                                    paste("Upload failed: ", e$message, sep="") ,
+                                                    "danger")
+                       })
 
-    if(length(labels) != (ncol(getCUSTOM_data()) - 1)) stop("Number of labels does not fit number of samples.")
-
+    if(length(labels) != (ncol(getCUSTOM_data()) - 1)){
+        shinysky::showshinyalert(session,
+                                 "custom_labels_error",
+                                 "Number of labels does not fit number of samples. Upload a new file or custom labels will be ignored." ,
+                                 "danger")
+        return(NULL)
+    }
+    shinysky::hideshinyalert(session,
+                             "custom_labels_error")
     return(labels)
 })
 
@@ -93,9 +117,22 @@ getCUSTOM_data_genes <- reactive({
 })
 
 getCUSTOM_data_mapped_genes <- reactive({
-    AnnotationDbi::mapIds(org.Hs.eg.db, getCUSTOM_data_genes(),
+    result <- tryCatch(
+        AnnotationDbi::mapIds(org.Hs.eg.db, getCUSTOM_data_genes(),
                           column = "ENTREZID",
-                          keytype = input$custom_gene_id_type)
+                          keytype = input$custom_gene_id_type),
+        error = function(e){
+            shinysky::showshinyalert(session,
+                                     "custom_label_mapping_error",
+                                     "ID mapping failed. Was the wrong ID selected?",
+                                     "danger")
+            return(NULL)
+        })
+    if(!is.null(result))
+        shinysky::hideshinyalert(session,
+                             "custom_label_mapping_error")
+
+    return(result)
 })
 
 
@@ -114,13 +151,14 @@ getCUSTOM_data_mapped_genes_table <- reactive({
 })
 
 startCUSTOM <- observeEvent(input$custom_button, {
-    getCUSTOM_subtypes()
-
-    shinyjs::show(selector = "#custom_nav li a[data-value='Predictions Plot']")
-    shinyjs::show(selector = "#custom_nav li a[data-value='Predictions Table']")
-    shinyjs::show(selector = "#custom_nav li a[data-value='Performance (subtypes)']")
-    shinyjs::show(selector = "#custom_nav li a[data-value='Performance (predictors)']")
-    shinyjs::show(selector = "#custom_nav li a[data-value='Confusion matrices']")
+    result <- getCUSTOM_subtypes()
+    if(!is.null(result)){
+        shinyjs::show(selector = "#custom_nav li a[data-value='Predictions Plot']")
+        shinyjs::show(selector = "#custom_nav li a[data-value='Predictions Table']")
+        shinyjs::show(selector = "#custom_nav li a[data-value='Performance (subtypes)']")
+        shinyjs::show(selector = "#custom_nav li a[data-value='Performance (predictors)']")
+        shinyjs::show(selector = "#custom_nav li a[data-value='Confusion matrices']")
+    }
 })
 
 getCUSTOM_subtypes <- reactive({
@@ -146,6 +184,7 @@ getCUSTOM_subtypes <- reactive({
 
     # get gene ids
     entrez_ids <- getCUSTOM_data_mapped_genes()
+    if(is.null(entrez_ids)) return(NULL)
     rownames(ex) <- entrez_ids
 
     # map gene ids. when several probes match the same gene use the one
@@ -182,5 +221,28 @@ getCUSTOM_subtypes <- reactive({
 
     progress$set(message = "Returning results", value = 1.0)
 
+    #select 1st result tab
+    updateTabsetPanel(session, "custom_nav",
+                      selected = "Predictions Table"
+    )
+
     return(final_result)
 })
+
+output$demo_data <- downloadHandler(
+    filename = function(){
+        paste("demo_data","txt",sep=".")
+    },
+    content = function(con){
+        file.copy("data/Desmedt-June07.txt", con)
+    }
+)
+
+output$demo_labels <- downloadHandler(
+    filename = function(){
+        paste("demo_labels","txt",sep=".")
+    },
+    content = function(con){
+        file.copy("data/Desmedt-June07-labels.txt", con)
+    }
+)
