@@ -1,7 +1,7 @@
 getCUSTOM_data <- reactive({
 
     # Create a Progress object
-    progress <- shiny::Progress$new()
+    progress <- shiny::Progress$new(style="old")
 
     # Make sure it closes when we exit this reactive, even if there's an error
     on.exit(progress$close())
@@ -138,7 +138,7 @@ getCUSTOM_data_mapped_genes <- reactive({
 
 getCUSTOM_data_mapped_genes_table <- reactive({
     # Create a Progress object
-    progress <- shiny::Progress$new()
+    progress <- shiny::Progress$new(style="old")
 
     # Make sure it closes when we exit this reactive, even if there's an error
     on.exit(progress$close())
@@ -164,7 +164,7 @@ startCUSTOM <- observeEvent(input$custom_button, {
 getCUSTOM_subtypes <- reactive({
 
     # Create a Progress object
-    progress <- shiny::Progress$new()
+    progress <- shiny::Progress$new(style="old")
 
     # Make sure it closes when we exit this reactive, even if there's an error
     on.exit(progress$close())
