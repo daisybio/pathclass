@@ -1,7 +1,7 @@
 # Download and process data from GEO
 getGEO_data <- eventReactive(input$geo_dl_button, {
     # Create a Progress object
-    progress <- shiny::Progress$new()
+    progress <- shiny::Progress$new(style="old")
 
     # Make sure it closes when we exit this reactive, even if there's an error
     on.exit(progress$close())
@@ -100,7 +100,7 @@ getGEO_mappedClassLabels <- reactive({
 getGEO_subtypes <- eventReactive(input$geo_button, {
 
     # Create a Progress object
-    progress <- shiny::Progress$new()
+    progress <- shiny::Progress$new(style="old")
 
     # Make sure it closes when we exit this reactive, even if there's an error
     on.exit(progress$close())
