@@ -55,6 +55,15 @@ shinyServer(function(input, output, session) {
         updateSelectInput(session, "selp_pathway", choices = pathway_names())
     })
 
+    observeEvent(input$selected_predictors, {
+        updateSelectInput(session, "geo_predictors", "Predictor", c(input$selected_predictors, "pam50", "GEO annotation"))
+        if(is.null(input$custom_class_labels))
+            updateSelectInput(session, "custom_predictors", "Predictor", c(input$selected_predictors, "pam50"))
+        else{
+            updateSelectInput(session, "custom_predictors", "Predictor", c(input$selected_predictors, "pam50", "CUSTOM"))
+        }
+    })
+
     output$selected_pathway_members <- renderDataTable({
         pathway_members()
     })

@@ -104,7 +104,7 @@ dashboardPage(
                                  box(title = "Select reference / gold standard",
                                      width = NULL,
                                      selectInput("geo_predictors", "Predictor",
-                                                 c(pathway.sources, "GEO annotation"),
+                                                 c(all.sources, "GEO annotation"),
                                                  "GEO annotation")
                                  ),
                                  box(

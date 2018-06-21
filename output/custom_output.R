@@ -36,6 +36,6 @@ output$download_custom_subtypes <- downloadHandler(
 
 observeEvent(input$custom_class_labels, {
     updateSelectInput(session, "custom_predictors",
-                      choices = c(all.sources, "CUSTOM"),
+                      choices = c(input$selected_predictors, "pam50", "CUSTOM"),
                       selected = "CUSTOM")
 })
