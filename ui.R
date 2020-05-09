@@ -28,7 +28,8 @@ dashboardPage(
                                 $("#geo_nav li:nth-child(" + i + ") a").hide();
                             }
                         });
-                    '))),
+                    ')),
+                    HTML('<link rel="stylesheet" type="text/css" href="cookieconsent.min.css"/><script src="cookieconsent.min.js"></script><script>window.addEventListener("load", function(){window.wpcc.init({"colors":{"popup":{"background":"#cff5ff","text":"#000000","border":"#5e99c2"},"button":{"background":"#5e99c2","text":"#ffffff"}}, "padding":"none","margin":"none","fontsize":"tiny","content":{"href":"https://www.learn-about-cookies.com/"},"position":"bottom-left"})});</script>')),
         tabItems(
             tabItem(tabName = "About",
                 HTML(aboutText)
