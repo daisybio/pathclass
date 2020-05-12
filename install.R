@@ -5,15 +5,10 @@ install.packages(c("shiny", "shinydashboard", "shinyjs", "dplyr", "ggplot2",
                    "gplots", "scales", "gridExtra", "lazyeval",
                    "randomForest", "foreach", "tidyr", "stringr", "RColorBrewer",
                    "iterators", "htmlwidgets", "matrixStats",
-                   "networkD3", "devtools", "XML", "R.utils"))
+                   "networkD3", "devtools", "XML", "R.utils", "BiocManager"))
 
 #bioconductor packages
-source("http://bioconductor.org/biocLite.R")
-biocLite("Biobase", ask=F)
-biocLite("GEOquery", ask=F)
-biocLite("genefu", ask=F)
-biocLite("org.Hs.eg.db", ask=F)
-biocLite("GSVA", ask=F)
+BiocManager::install(c("Biobase", "GEOquery", "genefu", "org.Hs.eg.db", "GSVA"))
 
 devtools::install_github("AnalytixWare/ShinySky")
 
