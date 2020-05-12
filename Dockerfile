@@ -15,7 +15,7 @@ ADD . pathclass
 #install R packages
 ENV RENV_VERSION 0.10.0-2
 RUN R -e "install.packages('remotes', repos = c(CRAN = 'https://cloud.r-project.org')); \ 
-          remotes::install_github('rstudio/renv@${RENV_VERSION}');
+          remotes::install_github('rstudio/renv@${RENV_VERSION}'); \
           renv::restore()"
 
 #update shiny server conf and configure it to run pathclass in single app mode
