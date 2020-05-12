@@ -9,7 +9,7 @@ libssl-dev
 
 #copy shiny app to work-dir
 RUN mkdir /srv/pathclass
-WORKDIR /srv/patchlass
+WORKDIR /srv/pathclass
 ADD . .
 
 #install R packages
