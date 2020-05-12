@@ -8,9 +8,9 @@ libcurl4-gnutls-dev \
 libssl-dev 
 
 #copy shiny app to work-dir
-WORKDIR /srv/
-RUN mkdir pathclass
-ADD . pathclass
+RUN mkdir /srv/pathclass
+WORKDIR /srv/patchlass
+ADD . .
 
 #install R packages
 ENV RENV_VERSION 0.10.0-2
